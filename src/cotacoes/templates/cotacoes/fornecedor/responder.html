@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Responder cotação · Cote-me{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <a class="action-link mb-16" href="{% url 'fornecedor:dashboard' %}">
+    <span class="material-symbols-rounded">arrow_back</span> Voltar ao painel
+  </a>
+
+  <div class="page-header">
+    <h1 class="page-title">Cotação #{{ cotacao.id }}</h1>
+    <p class="page-sub">Informe seu preço e prazo para cada item.</p>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    {% for form in formset.forms %}
+    <div class="glass-card mb-16">
+      <div class="card-head">
+        <h2 class="card-title">{{ form.item.produto_nome }}</h2>
+        <span class="card-sub">{{ form.item.categoria.nome }} · {{ form.item.quantidade }} {{ form.item.unidade }}</span>
+      </div>
+      {% if form.item.descricao %}<p class="muted">{{ form.item.descricao }}</p>{% endif %}
+
+      {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+      {% include "partials/form_field.html" with field=form.preco_unitario %}
+      {% include "partials/form_field.html" with field=form.prazo_entrega_dias %}
+      {% include "partials/form_field.html" with field=form.marca %}
+      {% include "partials/form_field.html" with field=form.observacoes %}
+    </div>
+    {% endfor %}
+
+    <div class="actions">
+      <a class="btn btn-ghost" href="{% url 'fornecedor:dashboard' %}">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
+        <span class="material-symbols-rounded">send</span> Enviar respostas
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

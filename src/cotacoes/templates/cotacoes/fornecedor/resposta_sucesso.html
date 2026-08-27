@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Resposta enviada · Cote-me{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="glass-card" style="max-width:480px;margin:48px auto;text-align:center">
+    <span class="material-symbols-rounded" style="font-size:48px;color:var(--success)">check_circle</span>
+    <h1 class="page-title">Resposta enviada!</h1>
+    <p class="page-sub">Sua cotação para a cotação #{{ cotacao.id }} foi registrada. Você poderá acompanhar o andamento no seu painel.</p>
+    <div class="actions" style="justify-content:center">
+      <a class="btn btn-primary" href="{% url 'fornecedor:dashboard' %}">Voltar ao painel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

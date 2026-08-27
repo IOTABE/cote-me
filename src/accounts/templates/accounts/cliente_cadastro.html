@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Criar conta · cote-me{% endblock %}
+{% block content %}
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-head">
+        <span class="auth-logo material-symbols-rounded">person_add</span>
+        <h1>Criar conta</h1>
+        <p>Cadastre-se para solicitar cotações de materiais.</p>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form.visible_fields %}
+          {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        {{ form.hidden_fields }}
+        <button type="submit" class="btn btn-primary" data-loading style="width:100%;margin-top:8px;">Criar conta</button>
+      </form>
+
+      <div class="auth-foot">
+        Já tem conta? <a href="{% url 'accounts:cliente_login' %}">Entrar</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

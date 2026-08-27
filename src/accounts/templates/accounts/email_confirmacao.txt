@@ -1,0 +1,12 @@
+Olá {{ user }},
+
+Obrigado por se cadastrar no cote-me.
+
+Para confirmar o seu e-mail e ativar a sua conta, acesse o link abaixo:
+
+{{ url }}
+
+Se você não se cadastrou no cote-me, ignore este e-mail.
+
+Atenciosamente,
+Equipe cote-me

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Minhas cotações · cote-me{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1 class="page-title">Minhas cotações</h1>
+    <p class="page-sub">Acompanhe o andamento das suas solicitações de materiais.</p>
+  </div>
+
+  <div class="actions mb-16">
+    <a href="{% url 'cliente:nova' %}" class="btn btn-primary">
+      <span class="material-symbols-rounded">add</span> Nova cotação
+    </a>
+  </div>
+
+  <div class="filters">
+    <a href="{% url 'cliente:dashboard' %}" class="filter-chip{% if not status_filtro %} active{% endif %}">Todas</a>
+    {% for value, label in status_choices %}
+      <a href="{% url 'cliente:dashboard' %}?status={{ value }}" class="filter-chip{% if status_filtro == value %} active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if cotacoes %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Criada em</th>
+            <th>Prazo</th>
+            <th>Status</th>
+            <th>Progresso</th>
+            <th class="num">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cotacoes %}
+            <tr>
+              <td class="cell-strong">#{{ c.id }}</td>
+              <td>{{ c.criada_em|date:"d/m/Y H:i" }}</td>
+              <td>{{ c.prazo_limite|date:"d/m/Y H:i"|default:"—" }}</td>
+              <td><span class="badge badge--{{ c.status }}">{{ c.get_status_display }}</span></td>
+              <td>
+                <div class="progress" aria-hidden="true">
+                  <div class="progress-bar" style="width:{{ c.progresso_percentual }}%;"></div>
+                </div>
+                <div class="progress-label"><span>{{ c.itens_respondidos }}/{{ c.total_itens }} itens</span><span class="num">{{ c.progresso_percentual }}%</span></div>
+              </td>
+              <td class="num">
+                <a href="{% url 'cliente:detalhe' c.id %}" class="action-link">
+                  <span class="material-symbols-rounded">visibility</span> Ver
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon material-symbols-rounded">inventory_2</span>
+      <h3>Nenhuma cotação ainda</h3>
+      <p>Crie sua primeira cotação para receber propostas de fornecedores.</p>
+      <a href="{% url 'cliente:nova' %}" class="btn btn-primary">Nova cotação</a>
+    </div>
+  {% endif %}
+{% endblock %}

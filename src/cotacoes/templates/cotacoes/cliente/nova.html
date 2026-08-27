@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nova cotação · Cote-me{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <a class="action-link mb-16" href="{% url 'cliente:dashboard' %}">
+    <span class="material-symbols-rounded">arrow_back</span> Voltar ao painel
+  </a>
+
+  <div class="page-header">
+    <h1 class="page-title">Nova cotação</h1>
+    <p class="page-sub">Adicione os itens que você precisa cotar e envie para seus fornecedores.</p>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="glass-card mb-16">
+      <div class="card-head">
+        <h2 class="card-title">Dados da cotação</h2>
+      </div>
+      {% include "partials/form_field.html" with field=form.prazo_limite %}
+      {% include "partials/form_field.html" with field=form.observacoes %}
+    </div>
+
+    <div class="glass-card mb-16">
+      <div class="card-head">
+        <h2 class="card-title">Itens da cotação</h2>
+        <span class="card-sub">Adicione ao menos um item.</span>
+      </div>
+
+      <div class="formset-container">
+        <div data-formset="{{ formset.prefix }}" data-min="1">
+          {{ formset.management_form }}
+
+          {% for f in formset.forms %}
+          <div class="formset-row glass-card">
+            {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+            <div class="card-head">
+              <h3 class="card-sub">Item {{ forloop.counter }}</h3>
+              {% if formset.can_delete and f.instance.pk %}<span class="badge badge--muted">existente</span>{% endif %}
+            </div>
+            {% include "partials/form_field.html" with field=f.categoria %}
+            {% include "partials/form_field.html" with field=f.produto_nome %}
+            {% include "partials/form_field.html" with field=f.quantidade %}
+            {% include "partials/form_field.html" with field=f.unidade %}
+            {% include "partials/form_field.html" with field=f.descricao %}
+            <button type="button" class="btn btn-sm btn-danger formset-remove">
+              <span class="material-symbols-rounded">delete</span> Remover item
+            </button>
+          </div>
+          {% endfor %}
+
+          <div class="formset-row glass-card" data-formset-template>
+            {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+            <div class="card-head">
+              <h3 class="card-sub">Novo item</h3>
+            </div>
+            {% include "partials/form_field.html" with field=formset.empty_form.categoria %}
+            {% include "partials/form_field.html" with field=formset.empty_form.produto_nome %}
+            {% include "partials/form_field.html" with field=formset.empty_form.quantidade %}
+            {% include "partials/form_field.html" with field=formset.empty_form.unidade %}
+            {% include "partials/form_field.html" with field=formset.empty_form.descricao %}
+            <button type="button" class="btn btn-sm btn-danger formset-remove">
+              <span class="material-symbols-rounded">delete</span> Remover item
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-sm btn-ghost formset-add mt-16">
+          <span class="material-symbols-rounded">add</span> Adicionar item
+        </button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-ghost" href="{% url 'cliente:dashboard' %}">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
+        <span class="material-symbols-rounded">send</span> Criar cotação
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Redirecionando…{% endblock %}
+
+{% block content %}
+<div class="glass-card auth-wrap" style="text-align:center">
+  <span class="material-symbols-rounded empty-icon">north_east</span>
+  <h1 class="page-title">Redirecionando…</h1>
+  <p class="page-sub">Escolha o painel desejado para continuar.</p>
+  <div class="actions mt-16" style="justify-content:center">
+    <a class="btn btn-primary" href="{% url 'cliente:dashboard' %}">Sou cliente</a>
+    <a class="btn btn-ghost" href="{% url 'fornecedor:dashboard' %}">Sou fornecedor</a>
+  </div>
+</div>
+{% endblock %}

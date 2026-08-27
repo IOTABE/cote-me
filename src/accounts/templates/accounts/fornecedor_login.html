@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Entrar como fornecedor · cote-me{% endblock %}
+{% block content %}
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-head">
+        <span class="auth-logo material-symbols-rounded">local_shipping</span>
+        <h1>Entrar como fornecedor</h1>
+        <p>Acesse as cotações enviadas pelos clientes.</p>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form.visible_fields %}
+          {% include "partials/form_field.html" with field=field %}
+        {% endfor %}
+        {{ form.hidden_fields }}
+        <button type="submit" class="btn btn-primary" data-loading style="width:100%;margin-top:8px;">Entrar</button>
+      </form>
+
+      <div class="auth-foot">
+        É cliente? <a href="{% url 'accounts:cliente_login' %}">Entrar como cliente</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

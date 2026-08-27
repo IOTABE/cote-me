@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Escolher vencedores · Cote-me{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <a class="action-link mb-16" href="{% url 'cliente:detalhe' cotacao.id %}">
+    <span class="material-symbols-rounded">arrow_back</span> Voltar à cotação
+  </a>
+
+  <div class="page-header">
+    <h1 class="page-title">Escolher vencedores</h1>
+    <p class="page-sub">Cotação #{{ cotacao.id }} — defina o fornecedor vencedor de cada item.</p>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% for entry in forms_por_item %}
+    <div class="glass-card mb-16">
+      <div class="card-head">
+        <h2 class="card-title">{{ entry.item.produto_nome }}</h2>
+        <span class="card-sub">{{ entry.item.categoria.nome }} · {{ entry.item.quantidade }} {{ entry.item.unidade }}</span>
+      </div>
+
+      {% if entry.form.vencedor.field.choices %}
+      <div class="form-group">
+        <span class="form-label">Fornecedor vencedor</span>
+        {% for value, label in entry.form.vencedor.field.choices %}
+        <label class="check-label">
+          <input type="radio" name="vencedor_{{ entry.item.id }}" value="{{ value }}"
+            {% if value|stringformat:"s" == entry.form.vencedor.initial|stringformat:"s" %}checked{% endif %}>
+          <span>{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty-state">Nenhuma resposta recebida para este item.</p>
+      {% endif %}
+      {% for hidden in entry.form.hidden_fields %}{{ hidden }}{% endfor %}
+    </div>
+    {% endfor %}
+
+    <div class="actions">
+      <a class="btn btn-ghost" href="{% url 'cliente:detalhe' cotacao.id %}">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
+        <span class="material-symbols-rounded">check_circle</span> Confirmar e gerar pedidos
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

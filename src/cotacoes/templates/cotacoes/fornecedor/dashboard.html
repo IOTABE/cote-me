@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Painel do fornecedor · Cote-me{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="page-header">
+    <h1 class="page-title">Painel do fornecedor</h1>
+    <p class="page-sub">Cotações pendentes, respondidas e pedidos recebidos.</p>
+  </div>
+
+  <h2 class="section-title">Cotações pendentes</h2>
+  {% if tokens_pendentes %}
+  <div class="glass-card mb-16">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Cotação</th>
+            <th>Itens</th>
+            <th>Prazo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tokens_pendentes %}
+          <tr>
+            <td class="cell-strong">{{ t.cotacao.cliente.cliente_profile.empresa|default:t.cotacao.cliente.email }}</td>
+            <td>#{{ t.cotacao.id }}</td>
+            <td class="num">{{ t.cotacao.total_itens }}</td>
+            <td class="muted">{{ t.cotacao.prazo_limite|date:"d/m/Y"|default:"—" }}</td>
+            <td>
+              <a class="btn btn-sm btn-primary" href="{% url 'fornecedor:responder' cotacao_id=t.cotacao.id token_hash=t.token_hash %}">
+                <span class="material-symbols-rounded">rate_review</span> Responder
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="glass-card mb-16"><p class="empty-state">Nenhuma cotação pendente.</p></div>
+  {% endif %}
+
+  <h2 class="section-title">Cotações respondidas</h2>
+  {% if cotacoes_respondidas %}
+  <div class="glass-card mb-16">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Cotação</th>
+            <th>Respondido em</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cotacoes_respondidas %}
+          <tr>
+            <td class="cell-strong">{{ c.cliente.cliente_profile.empresa|default:c.cliente.email }}</td>
+            <td>#{{ c.id }}</td>
+            <td class="muted">{{ c.criado_em|date:"d/m/Y" }}</td>
+            <td>
+              <a class="btn btn-sm btn-ghost" href="{% url 'fornecedor:responder_dashboard' c.id %}">
+                <span class="material-symbols-rounded">visibility</span> Ver resposta
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="glass-card mb-16"><p class="empty-state">Nenhuma cotação respondida.</p></div>
+  {% endif %}
+
+  <h2 class="section-title">Pedidos recebidos</h2>
+  {% if pedidos %}
+  <div class="glass-card">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Cotação</th>
+            <th>Situação</th>
+            <th>Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pedidos %}
+          <tr>
+            <td class="cell-strong">#{{ p.id }}</td>
+            <td>#{{ p.cotacao.id }}</td>
+            <td><span class="badge badge--{{ p.status }}">{{ p.get_status_display }}</span></td>
+            <td class="num">R$ {{ p.total|floatformat:2 }}</td>
+            <td>
+              <a class="btn btn-sm btn-ghost" href="{% url 'fornecedor:detalhe_pedido' p.id %}">
+                <span class="material-symbols-rounded">description</span> Detalhes
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="glass-card"><p class="empty-state">Nenhum pedido recebido.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

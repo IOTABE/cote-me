@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Meus pedidos · Cote-me{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <a class="action-link mb-16" href="{% url 'cliente:dashboard' %}">
+    <span class="material-symbols-rounded">arrow_back</span> Voltar ao painel
+  </a>
+
+  <div class="page-header">
+    <h1 class="page-title">Meus pedidos</h1>
+    <p class="page-sub">Acompanhe os pedidos gerados a partir das suas cotações.</p>
+  </div>
+
+  {% if pedidos %}
+  <div class="glass-card">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Cotação</th>
+            <th>Fornecedor</th>
+            <th>Situação</th>
+            <th>Total</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pedidos %}
+          <tr>
+            <td class="cell-strong">#{{ p.id }}</td>
+            <td><a class="action-link" href="{% url 'cliente:detalhe' p.cotacao.id %}">#{{ p.cotacao.id }}</a></td>
+            <td>{{ p.fornecedor.fornecedor_profile.get_display_name }}</td>
+            <td><span class="badge badge--{{ p.status }}">{{ p.get_status_display }}</span></td>
+            <td class="num">R$ {{ p.total|floatformat:2 }}</td>
+            <td class="muted">{{ p.criado_em|date:"d/m/Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="glass-card">
+    <p class="empty-state">Você ainda não gerou nenhum pedido. Escolha vencedores em uma cotação fechada.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

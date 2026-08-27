@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}cote-me — Cotações inteligentes{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <h1 class="page-title">Conecte clientes e fornecedores</h1>
+  <p class="page-sub">Solicite cotações de materiais e receba propostas dos fornecedores em um só lugar.</p>
+</section>
+
+<div class="grid-2">
+  <div class="glass-card">
+    <span class="material-symbols-rounded" style="font-size:38px;color:var(--accent-2)">description</span>
+    <h3 class="card-title mt-16">Para clientes</h3>
+    <p class="card-sub">Crie cotações com vários itens, defina um prazo e compare as respostas dos fornecedores para escolher os vencedores.</p>
+    <div class="actions mt-16">
+      <a class="btn btn-primary" href="{% url 'accounts:cliente_cadastro' %}">Criar conta</a>
+      <a class="btn btn-ghost" href="{% url 'cliente:nova' %}">Nova cotação</a>
+    </div>
+  </div>
+
+  <div class="glass-card">
+    <span class="material-symbols-rounded" style="font-size:38px;color:var(--accent-3)">storefront</span>
+    <h3 class="card-title mt-16">Para fornecedores</h3>
+    <p class="card-sub">Responda às cotações recebidas por e-mail, envie preços por item e acompanhe os pedidos gerados.</p>
+    <div class="actions mt-16">
+      <a class="btn btn-primary" href="{% url 'accounts:fornecedor_primeiro_acesso' %}">Primeiro acesso</a>
+      <a class="btn btn-ghost" href="{% url 'fornecedor:dashboard' %}">Painel</a>
+    </div>
+  </div>
+</div>
+
+<div class="empty-state mt-24">
+  <span class="material-symbols-rounded empty-icon">price_check</span>
+  <h3>Como funciona</h3>
+  <p>1. O cliente cria uma cotação · 2. Os fornecedores recebem um link · 3. Eles respondem com preços · 4. O cliente escolhe os vencedores e gera pedidos.</p>
+  <a class="btn btn-primary" href="{% url 'cliente:dashboard' %}">Ver cotações</a>
+</div>
+{% endblock %}

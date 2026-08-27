@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Detalhes da cotação · Cote-me{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <a class="action-link mb-16" href="{% url 'cliente:dashboard' %}">
+    <span class="material-symbols-rounded">arrow_back</span> Voltar ao painel
+  </a>
+
+  <div class="page-header">
+    <h1 class="page-title">Cotação #{{ cotacao.id }}</h1>
+    <p class="page-sub">
+      Criada em {{ cotacao.criada_em|date:"d/m/Y H:i" }}
+      {% if cotacao.prazo_limite %} · Prazo {{ cotacao.prazo_limite|date:"d/m/Y H:i" }}{% endif %}
+    </p>
+  </div>
+
+  <div class="glass-card mb-16">
+    <div class="card-head">
+      <h2 class="card-title">Situação</h2>
+      <span class="badge badge--{{ cotacao.status }}">{{ cotacao.get_status_display }}</span>
+    </div>
+    <div class="progress">
+      <div class="progress-bar" style="width:{{ cotacao.progresso_percentual }}%"></div>
+    </div>
+    <div class="progress-label muted">
+      {{ cotacao.itens_respondidos }} de {{ cotacao.total_itens }} itens com resposta
+    </div>
+
+    {% if cotacao.status == "fechada" %}
+    <div class="actions mt-16">
+      <a class="btn btn-primary" href="{% url 'cliente:escolher_vencedores' cotacao.id %}">
+        <span class="material-symbols-rounded">emoji_events</span> Escolher vencedores
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% for entry in itens_com_respostas %}
+  <div class="glass-card mb-16">
+    <div class="card-head">
+      <h2 class="card-title">{{ entry.item.produto_nome }}</h2>
+      <span class="card-sub">{{ entry.item.categoria.nome }} · {{ entry.item.quantidade }} {{ entry.item.unidade }}</span>
+    </div>
+    {% if entry.item.descricao %}<p class="muted">{{ entry.item.descricao }}</p>{% endif %}
+
+    {% if entry.respostas %}
+    <div class="table-wrap mt-16">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Fornecedor</th>
+            <th>Preço unit.</th>
+            <th>Prazo</th>
+            <th>Marca</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in entry.respostas %}
+          <tr class="{% if entry.melhor and entry.melhor.id == r.id %}row-best{% endif %}">
+            <td class="cell-strong">{{ r.fornecedor }}</td>
+            <td class="num">R$ {{ r.preco_unitario|floatformat:2 }}</td>
+            <td class="num">{{ r.prazo_entrega_dias }} d</td>
+            <td>{{ r.marca|default:"—" }}</td>
+            <td>
+              {% if entry.melhor and entry.melhor.id == r.id %}
+              <span class="badge badge--success">Melhor preço</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty-state mt-16">Nenhuma resposta para este item ainda.</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <a class="action-link mt-16" href="{% url 'cliente:meus_pedidos' %}">Ver meus pedidos</a>
+</div>
+{% endblock %}

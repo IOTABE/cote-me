@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sem itens · Cote-me{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="section">
+  <div class="glass-card" style="max-width:480px;margin:48px auto;text-align:center">
+    <span class="material-symbols-rounded" style="font-size:48px;color:var(--warning)">warning</span>
+    <h1 class="page-title">Nenhum item disponível</h1>
+    <p class="page-sub">Esta cotação não possui itens para responder ou já foi finalizada.</p>
+    <div class="actions" style="justify-content:center">
+      <a class="btn btn-primary" href="{% url 'fornecedor:dashboard' %}">Voltar ao painel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

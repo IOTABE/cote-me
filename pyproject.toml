@@ -1,0 +1,34 @@
+[project]
+name = "cote-me"
+version = "0.1.0"
+description = "Sistema de cotações online conectando clientes e fornecedores"
+readme = "PRD.md"
+authors = [
+    { name = "João Barboasa", email = "iotabe@iotabe.adm.br" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.0,<6.0",
+    "psycopg[binary]>=3.2,<4.0",
+    "gunicorn>=22.0,<24.0",
+    "whitenoise>=6.7,<7.0",
+    "django-environ>=0.11,<1.0",
+    "argon2-cffi>=23.1,<24.0",
+    "celery>=5.4,<6.0",
+    "redis>=5.0,<6.0",
+    "python-dotenv>=1.0,<2.0",
+    "django-extensions>=3.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "django-extensions>=3.2,<4.0",
+    "ipython>=8.0,<9.0",
+]
+
+[project.scripts]
+cote-me = "cote_me.manage:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
