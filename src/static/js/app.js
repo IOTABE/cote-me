@@ -9,6 +9,7 @@
 
   ready(function () {
     initDropdowns();
+    initNavToggle();
     initAlerts();
     initForms();
     initFormsets();
@@ -47,6 +48,39 @@
     });
     document.querySelectorAll("[data-dropdown-trigger]").forEach(function (t) {
       t.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  /* ---- Mobile nav (hamburger) toggle ---- */
+  function initNavToggle() {
+    var btn = document.querySelector("[data-nav-toggle]");
+    if (!btn) return;
+    var header = btn.closest(".app-header");
+    var icon = btn.querySelector(".material-symbols-rounded");
+
+    function setOpen(open) {
+      header.classList.toggle("is-open", open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
+      if (icon) icon.textContent = open ? "close" : "menu";
+    }
+
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setOpen(!header.classList.contains("is-open"));
+    });
+
+    // Fecha ao clicar fora ou em um link do menu
+    document.addEventListener("click", function (e) {
+      if (header.classList.contains("is-open") && !header.contains(e.target)) {
+        setOpen(false);
+      }
+    });
+    document.getElementById("nav-actions").addEventListener("click", function (e) {
+      if (e.target.closest("a")) setOpen(false);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && header.classList.contains("is-open")) setOpen(false);
     });
   }
 

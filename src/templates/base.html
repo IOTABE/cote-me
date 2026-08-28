@@ -30,7 +30,11 @@
         </a>
       </div>
 
-      <nav class="nav-actions" aria-label="Navegação principal">
+      <button type="button" class="nav-toggle" data-nav-toggle aria-label="Abrir menu" aria-expanded="false" aria-controls="nav-actions">
+        <span class="material-symbols-rounded">menu</span>
+      </button>
+
+      <nav class="nav-actions" id="nav-actions" aria-label="Navegação principal">
         <div class="nav-group">
           <a class="nav-item" href="{% url 'cliente:dashboard' %}">Minhas cotações</a>
           <a class="nav-item" href="{% url 'cliente:nova' %}">Solicitar cotação</a>
