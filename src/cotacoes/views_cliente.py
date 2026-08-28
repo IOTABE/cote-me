@@ -1,6 +1,8 @@
 """
 Views do CLIENTE: dashboard, criar cotação, detalhar, escolher vencedores, disparar pedidos.
 """
+from decimal import Decimal
+
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
@@ -75,6 +77,8 @@ def detalhe_cotacao(request, pk):
 
     # Para cada item, prepara lista de respostas ordenadas por preço
     itens_com_respostas = []
+    ranking_fornecedores = {}  # {user_id: {"nome": ..., "total": Decimal, "itens": int, "vencendo": int}}
+
     for item in cotacao.itens.all():
         respostas = list(item.respostas_fornecedor.select_related("fornecedor__fornecedor_profile").order_by("preco_unitario"))
         melhor = respostas[0] if respostas else None
@@ -84,9 +88,26 @@ def detalhe_cotacao(request, pk):
             "melhor": melhor,
         })
 
+        for idx, r in enumerate(respostas):
+            fid = r.fornecedor_id
+            if fid not in ranking_fornecedores:
+                ranking_fornecedores[fid] = {
+                    "nome": r.fornecedor.fornecedor_profile.get_display_name(),
+                    "total": Decimal("0"),
+                    "itens": 0,
+                    "vencendo": 0,
+                }
+            ranking_fornecedores[fid]["total"] += r.preco_total
+            ranking_fornecedores[fid]["itens"] += 1
+            if idx == 0:
+                ranking_fornecedores[fid]["vencendo"] += 1
+
+    ranking_ordenado = sorted(ranking_fornecedores.values(), key=lambda x: x["total"])
+
     return render(request, "cotacoes/cliente/detalhe.html", {
         "cotacao": cotacao,
         "itens_com_respostas": itens_com_respostas,
+        "ranking_fornecedores": ranking_ordenado,
     })
 
 

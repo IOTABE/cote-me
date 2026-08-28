@@ -155,3 +155,92 @@ class FornecedorForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
+
+
+class FornecedorCadastroForm(UserCreationForm):
+    """Cadastro público de fornecedor (pendente de aprovação do admin)."""
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={"class": "form-control", "autocomplete": "email"}),
+    )
+    telefone = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "(11) 99999-9999"}),
+    )
+    razao_social = forms.CharField(
+        label="Razão social",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    nome_fantasia = forms.CharField(
+        label="Nome fantasia (opcional)",
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    cnpj = forms.CharField(
+        label="CNPJ",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "00.000.000/0000-00"}),
+    )
+    endereco = forms.CharField(
+        label="Endereço (opcional)",
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+    )
+    categorias = forms.ModelMultipleChoiceField(
+        queryset=None,
+        required=True,
+        widget=forms.CheckboxSelectMultiple,
+        label="Categorias de atuação",
+        help_text="Selecione as categorias de produtos que você fornece.",
+    )
+    aceitou_termos = forms.BooleanField(
+        required=True,
+        label="Li e aceito os Termos de Uso e Política de Privacidade",
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+    )
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username", "email", "telefone", "password1", "password2")
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "form-control", "autocomplete": "username"}),
+            "password1": forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"}),
+            "password2": forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from core.models import Categoria
+        self.fields["categorias"].queryset = Categoria.objects.filter(ativa=True).order_by("nome")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError("Este e-mail já está cadastrado.")
+        return email
+
+    def clean_cnpj(self):
+        cnpj = self.cleaned_data["cnpj"]
+        if Fornecedor.objects.filter(cnpj=cnpj).exists():
+            raise ValidationError("Este CNPJ já está cadastrado.")
+        return cnpj
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        user.telefone = self.cleaned_data["telefone"]
+        user.aceitou_termos = True
+        user.aceitou_termos_em = timezone.now()
+        user.is_active = False  # aguarda confirmação de e-mail
+        if commit:
+            user.save()
+            fornecedor = Fornecedor.objects.create(
+                user=user,
+                razao_social=self.cleaned_data["razao_social"],
+                nome_fantasia=self.cleaned_data.get("nome_fantasia", ""),
+                cnpj=self.cleaned_data["cnpj"],
+                telefone=self.cleaned_data.get("telefone", ""),
+                endereco=self.cleaned_data.get("endereco", ""),
+                ativo=False,  # pendente de aprovação do admin
+            )
+            fornecedor.categorias.set(self.cleaned_data["categorias"])
+        return user

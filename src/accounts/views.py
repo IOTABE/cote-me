@@ -10,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 
 from .forms import (
     ClienteCadastroForm,
+    FornecedorCadastroForm,
     ClienteLoginForm,
     FornecedorLoginForm,
     FornecedorAlterarSenhaForm,
@@ -70,7 +71,7 @@ def _enviar_email_confirmacao(user: User, token: str) -> None:
 
 @require_http_methods(["GET"])
 def confirmar_email(request):
-    """Valida token de confirmação de e-mail."""
+    """Valida token de confirmação de e-mail (cliente ou fornecedor)."""
     token = request.GET.get("token", "").strip()
     if not token:
         messages.error(request, "Token inválido.")
@@ -100,6 +101,15 @@ def confirmar_email(request):
     tk.user.save(update_fields=["is_active"])
     tk.marcar_usado()
 
+    # Detecta se é fornecedor ou cliente para redirecionamento correto
+    if hasattr(tk.user, "fornecedor_profile"):
+        messages.success(
+            request,
+            "E-mail confirmado! Seu cadastro será analisado e você receberá "
+            "um e-mail quando for aprovado pelo administrador."
+        )
+        return redirect("accounts:fornecedor_login")
+
     messages.success(request, "E-mail confirmado! Você já pode fazer login.")
     return redirect("accounts:cliente_login")
 
@@ -122,6 +132,36 @@ def cliente_login(request):
         form = ClienteLoginForm()
 
     return render(request, "accounts/cliente_login.html", {"form": form})
+
+
+@require_http_methods(["GET", "POST"])
+def fornecedor_cadastro(request):
+    """Cadastro público de fornecedor (pendente de aprovação do admin)."""
+    if request.user.is_authenticated:
+        return redirect("core:dashboard_redirect")
+
+    if request.method == "POST":
+        form = FornecedorCadastroForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            token = montar_token_assinado()
+            EmailToken.objects.create(
+                user=user,
+                tipo=EmailToken.Tipo.CONFIRMACAO_EMAIL,
+                token_hash=token,
+                expira_em=timezone.now() + timezone.timedelta(hours=24),
+            )
+            _enviar_email_confirmacao(user, token)
+            messages.success(
+                request,
+                "Cadastro realizado! Enviamos um e-mail de confirmação. "
+                "Após confirmar, seu cadastro será analisado pelo administrador."
+            )
+            return redirect("accounts:fornecedor_login")
+    else:
+        form = FornecedorCadastroForm()
+
+    return render(request, "accounts/fornecedor_cadastro.html", {"form": form})
 
 
 @require_http_methods(["GET", "POST"])

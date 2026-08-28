@@ -5,6 +5,30 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+<style>
+  .item-card { margin-bottom: 20px; }
+  .item-card .item-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .item-card .item-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px; background: var(--glass-bg-strong); border: 1px solid var(--glass-border); color: var(--accent); font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .item-card .item-info { flex: 1; }
+  .item-card .item-info h3 { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  .item-card .item-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--text-dim); }
+  .item-card .item-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .item-card .item-meta .material-symbols-rounded { font-size: 16px; }
+  .item-card .item-desc { font-size: 14px; color: var(--text-dim); margin: 8px 0 0; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); }
+  .item-card .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .item-card .fields-grid .form-group { margin-bottom: 0; }
+  .item-card .field-full { grid-column: 1 / -1; }
+  .price-preview { display: flex; align-items: center; gap: 8px; padding: 10px 14px; margin-top: 12px; background: rgba(124, 155, 255, 0.08); border: 1px solid rgba(124, 155, 255, 0.2); border-radius: 12px; font-size: 14px; color: var(--accent); }
+  .price-preview .material-symbols-rounded { font-size: 20px; }
+  .price-preview strong { font-size: 16px; margin-left: auto; font-variant-numeric: tabular-nums; }
+  .submit-bar { position: sticky; bottom: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; margin: 24px -22px -56px; background: rgba(7, 11, 31, 0.92); backdrop-filter: blur(16px); border-top: 1px solid var(--glass-border); }
+  .submit-bar .bar-info { font-size: 14px; color: var(--text-dim); }
+  .submit-bar .bar-info strong { color: var(--text); }
+  @media (max-width: 760px) {
+    .item-card .fields-grid { grid-template-columns: 1fr; }
+    .submit-bar { margin: 24px -16px -44px; }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -15,35 +39,103 @@
 
   <div class="page-header">
     <h1 class="page-title">Cotação #{{ cotacao.id }}</h1>
-    <p class="page-sub">Informe seu preço e prazo para cada item.</p>
+    <p class="page-sub">
+      {{ cotacao.cliente.cliente_profile.empresa|default:cotacao.cliente.email }}
+      {% if cotacao.prazo_limite %} · Prazo até {{ cotacao.prazo_limite|date:"d/m/Y H:i" }}{% endif %}
+    </p>
   </div>
 
-  <form method="post" novalidate>
+  {% if cotacao.observacoes %}
+  <div class="glass-card mb-16">
+    <div class="card-head">
+      <h2 class="card-title" style="font-size:15px;">
+        <span class="material-symbols-rounded" style="font-size:20px;color:var(--warn);vertical-align:middle;">info</span>
+        Observações do cliente
+      </h2>
+    </div>
+    <p class="muted" style="margin:0;font-size:14px;">{{ cotacao.observacoes }}</p>
+  </div>
+  {% endif %}
+
+  <form method="post" novalidate id="form-resposta">
     {% csrf_token %}
     {{ formset.management_form }}
 
     {% for form in formset.forms %}
-    <div class="glass-card mb-16">
-      <div class="card-head">
-        <h2 class="card-title">{{ form.item.produto_nome }}</h2>
-        <span class="card-sub">{{ form.item.categoria.nome }} · {{ form.item.quantidade }} {{ form.item.unidade }}</span>
+    <div class="glass-card item-card">
+      <div class="item-header">
+        <span class="item-number">{{ forloop.counter }}</span>
+        <div class="item-info">
+          <h3>{{ form.item.produto_nome }}</h3>
+          <div class="item-meta">
+            <span><span class="material-symbols-rounded">category</span> {{ form.item.categoria.nome }}</span>
+            <span><span class="material-symbols-rounded">inventory_2</span> {{ form.item.quantidade }} {{ form.item.unidade }}</span>
+          </div>
+          {% if form.item.descricao %}
+          <div class="item-desc">{{ form.item.descricao }}</div>
+          {% endif %}
+        </div>
       </div>
-      {% if form.item.descricao %}<p class="muted">{{ form.item.descricao }}</p>{% endif %}
 
       {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
-      {% include "partials/form_field.html" with field=form.preco_unitario %}
-      {% include "partials/form_field.html" with field=form.prazo_entrega_dias %}
-      {% include "partials/form_field.html" with field=form.marca %}
-      {% include "partials/form_field.html" with field=form.observacoes %}
+
+      <div class="fields-grid">
+        {% include "partials/form_field.html" with field=form.preco_unitario %}
+        {% include "partials/form_field.html" with field=form.prazo_entrega_dias %}
+        {% include "partials/form_field.html" with field=form.marca %}
+        <div class="field-full">
+          {% include "partials/form_field.html" with field=form.observacoes %}
+        </div>
+      </div>
+
+      <div class="price-preview" data-qty="{{ form.item.quantidade }}">
+        <span class="material-symbols-rounded">calculate</span>
+        Total estimado ({{ form.item.quantidade }} {{ form.item.unidade }}):
+        <strong data-total>R$ 0,00</strong>
+      </div>
     </div>
     {% endfor %}
 
-    <div class="actions">
-      <a class="btn btn-ghost" href="{% url 'fornecedor:dashboard' %}">Cancelar</a>
-      <button type="submit" class="btn btn-primary">
-        <span class="material-symbols-rounded">send</span> Enviar respostas
-      </button>
+    <div class="submit-bar">
+      <div class="bar-info">
+        <strong>{{ formset.forms|length }}</strong> item(ns) para responder
+      </div>
+      <div class="actions" style="gap:10px;">
+        <a class="btn btn-ghost" href="{% url 'fornecedor:dashboard' %}">Cancelar</a>
+        <button type="submit" class="btn btn-primary" data-loading>
+          <span class="material-symbols-rounded">send</span> Enviar respostas
+        </button>
+      </div>
     </div>
   </form>
 </div>
+
+<script>
+(function () {
+  "use strict";
+
+  function parseBRL(str) {
+    return parseFloat(str.replace(/[^\d,.-]/g, "").replace(".", "").replace(",", ".")) || 0;
+  }
+
+  function formatBRL(val) {
+    return "R$ " + val.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
+  function updatePreview(input) {
+    var card = input.closest(".item-card");
+    if (!card) return;
+    var preview = card.querySelector("[data-total]");
+    if (!preview) return;
+    var qty = parseFloat(card.querySelector("[data-qty]").getAttribute("data-qty")) || 1;
+    var preco = parseFloat(input.value) || 0;
+    preview.textContent = formatBRL(preco * qty);
+  }
+
+  document.querySelectorAll('input[name$="-preco_unitario"]').forEach(function (input) {
+    input.addEventListener("input", function () { updatePreview(input); });
+    updatePreview(input);
+  });
+})();
+</script>
 {% endblock %}

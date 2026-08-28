@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Cadastro de fornecedor · cote-me{% endblock %}
+{% block content %}
+  <div class="auth-wrap" style="max-width:540px;">
+    <div class="auth-card">
+      <div class="auth-head">
+        <span class="auth-logo material-symbols-rounded">local_shipping</span>
+        <h1>Cadastro de fornecedor</h1>
+        <p>Cadastre-se para receber e responder cotações de clientes.<br>Após a confirmação do e-mail, seu cadastro será analisado pelo administrador.</p>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <h3 class="section-title" style="font-size:15px;margin-top:4px;">
+          <span class="material-symbols-rounded">person</span> Dados de acesso
+        </h3>
+        {% include "partials/form_field.html" with field=form.email %}
+        {% include "partials/form_field.html" with field=form.username %}
+        {% include "partials/form_field.html" with field=form.telefone %}
+        {% include "partials/form_field.html" with field=form.password1 %}
+        {% include "partials/form_field.html" with field=form.password2 %}
+
+        <h3 class="section-title" style="font-size:15px;margin-top:20px;">
+          <span class="material-symbols-rounded">business</span> Dados da empresa
+        </h3>
+        {% include "partials/form_field.html" with field=form.razao_social %}
+        {% include "partials/form_field.html" with field=form.nome_fantasia %}
+        {% include "partials/form_field.html" with field=form.cnpj %}
+        {% include "partials/form_field.html" with field=form.endereco %}
+
+        <h3 class="section-title" style="font-size:15px;margin-top:20px;">
+          <span class="material-symbols-rounded">category</span> Áreas de atuação
+        </h3>
+        {% include "partials/form_field.html" with field=form.categorias %}
+
+        <div style="margin-top:16px;">
+          {% include "partials/form_field.html" with field=form.aceitou_termos %}
+        </div>
+
+        <button type="submit" class="btn btn-primary" data-loading style="width:100%;margin-top:12px;">
+          Criar conta de fornecedor
+        </button>
+      </form>
+
+      <div class="auth-foot">
+        Já tem conta? <a href="{% url 'accounts:fornecedor_login' %}">Entrar como fornecedor</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

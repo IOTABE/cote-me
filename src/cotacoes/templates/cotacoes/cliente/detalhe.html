@@ -1,10 +1,41 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Detalhes da cotação · Cote-me{% endblock %}
+{% block title %}Cotação #{{ cotacao.id }} · Cote-me{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/glassmorphism.css' %}">
+<style>
+  .item-section { margin-bottom: 20px; }
+  .item-section .item-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .item-section .item-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px; background: var(--glass-bg-strong); border: 1px solid var(--glass-border); color: var(--accent); font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .item-section .item-info { flex: 1; }
+  .item-section .item-info h3 { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  .item-section .item-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--text-dim); }
+  .item-section .item-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .item-section .item-meta .material-symbols-rounded { font-size: 16px; }
+  .item-section .item-desc { font-size: 14px; color: var(--text-dim); margin: 8px 0 0; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); }
+  .no-responses { padding: 20px; text-align: center; color: var(--text-dim); font-size: 14px; }
+
+  .ranking-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+  .ranking-card h2 { font-size: 18px; font-weight: 700; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; }
+  .ranking-card h2 .material-symbols-rounded { color: var(--accent-2); font-size: 22px; }
+  .ranking-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .ranking-table thead th { text-align: left; padding: 10px 14px; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-faint); background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--glass-border); font-weight: 600; }
+  .ranking-table thead th:last-child { text-align: right; }
+  .ranking-table tbody td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.07); vertical-align: middle; }
+  .ranking-table tbody tr:last-child td { border-bottom: none; }
+  .ranking-table tbody tr.rank-first { background: rgba(91, 229, 132, 0.08); }
+  .ranking-table tbody tr.rank-first td { font-weight: 600; }
+  .ranking-pos { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+  .rank-1 { background: rgba(91, 229, 132, 0.2); color: var(--ok); }
+  .rank-2 { background: rgba(124, 155, 255, 0.15); color: var(--accent); }
+  .rank-3 { background: rgba(255, 207, 92, 0.15); color: var(--warn); }
+  .rank-other { background: var(--glass-bg-strong); color: var(--text-dim); }
+  .td-right { text-align: right; font-variant-numeric: tabular-nums; }
+  .td-center { text-align: center; }
+  .badge-best { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(91, 229, 132, 0.15); color: var(--ok); border: 1px solid rgba(91, 229, 132, 0.3); }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -21,6 +52,7 @@
     </p>
   </div>
 
+  {# --- Card de situação --- #}
   <div class="glass-card mb-16">
     <div class="card-head">
       <h2 class="card-title">Situação</h2>
@@ -42,21 +74,68 @@
     {% endif %}
   </div>
 
-  {% for entry in itens_com_respostas %}
-  <div class="glass-card mb-16">
-    <div class="card-head">
-      <h2 class="card-title">{{ entry.item.produto_nome }}</h2>
-      <span class="card-sub">{{ entry.item.categoria.nome }} · {{ entry.item.quantidade }} {{ entry.item.unidade }}</span>
+  {# --- Ranking por fornecedor --- #}
+  {% if ranking_fornecedores %}
+  <div class="ranking-card">
+    <h2><span class="material-symbols-rounded">leaderboard</span> Ranking dos fornecedores</h2>
+    <div class="table-wrap">
+      <table class="ranking-table">
+        <thead>
+          <tr>
+            <th style="width:50px;">#</th>
+            <th>Fornecedor</th>
+            <th class="td-center">Itens respondidos</th>
+            <th class="td-center">Menor preço em</th>
+            <th>Total geral</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in ranking_fornecedores %}
+          <tr class="{% if forloop.first %}rank-first{% endif %}">
+            <td>
+              {% if forloop.counter == 1 %}<span class="ranking-pos rank-1">1</span>
+              {% elif forloop.counter == 2 %}<span class="ranking-pos rank-2">2</span>
+              {% elif forloop.counter == 3 %}<span class="ranking-pos rank-3">3</span>
+              {% else %}<span class="ranking-pos rank-other">{{ forloop.counter }}</span>
+              {% endif %}
+            </td>
+            <td>{{ f.nome }}</td>
+            <td class="td-center">{{ f.itens }}</td>
+            <td class="td-center">{{ f.vencendo }}</td>
+            <td class="td-right"><strong>R$ {{ f.total|floatformat:2 }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    {% if entry.item.descricao %}<p class="muted">{{ entry.item.descricao }}</p>{% endif %}
+  </div>
+  {% endif %}
+
+  {# --- Comparação por item --- #}
+  {% for entry in itens_com_respostas %}
+  <div class="glass-card item-section">
+    <div class="item-header">
+      <span class="item-number">{{ forloop.counter }}</span>
+      <div class="item-info">
+        <h3>{{ entry.item.produto_nome }}</h3>
+        <div class="item-meta">
+          <span><span class="material-symbols-rounded">category</span> {{ entry.item.categoria.nome }}</span>
+          <span><span class="material-symbols-rounded">inventory_2</span> {{ entry.item.quantidade }} {{ entry.item.unidade }}</span>
+        </div>
+        {% if entry.item.descricao %}
+        <div class="item-desc">{{ entry.item.descricao }}</div>
+        {% endif %}
+      </div>
+    </div>
 
     {% if entry.respostas %}
-    <div class="table-wrap mt-16">
+    <div class="table-wrap">
       <table class="table">
         <thead>
           <tr>
             <th>Fornecedor</th>
             <th>Preço unit.</th>
+            <th>Preço total</th>
             <th>Prazo</th>
             <th>Marca</th>
             <th></th>
@@ -65,13 +144,16 @@
         <tbody>
           {% for r in entry.respostas %}
           <tr class="{% if entry.melhor and entry.melhor.id == r.id %}row-best{% endif %}">
-            <td class="cell-strong">{{ r.fornecedor }}</td>
+            <td class="cell-strong">{{ r.fornecedor.fornecedor_profile.get_display_name|default:r.fornecedor.email }}</td>
             <td class="num">R$ {{ r.preco_unitario|floatformat:2 }}</td>
+            <td class="num cell-strong">R$ {{ r.preco_total|floatformat:2 }}</td>
             <td class="num">{{ r.prazo_entrega_dias }} d</td>
             <td>{{ r.marca|default:"—" }}</td>
             <td>
               {% if entry.melhor and entry.melhor.id == r.id %}
-              <span class="badge badge--success">Melhor preço</span>
+              <span class="badge-best">
+                <span class="material-symbols-rounded" style="font-size:14px;">star</span> Melhor preço
+              </span>
               {% endif %}
             </td>
           </tr>
@@ -80,8 +162,15 @@
       </table>
     </div>
     {% else %}
-    <p class="empty-state mt-16">Nenhuma resposta para este item ainda.</p>
+    <div class="no-responses">
+      <span class="material-symbols-rounded" style="font-size:32px;display:block;margin-bottom:6px;opacity:.5;">hourglass_empty</span>
+      Nenhuma resposta para este item ainda.
+    </div>
     {% endif %}
+  </div>
+  {% empty %}
+  <div class="glass-card">
+    <p class="empty-state">Nenhum item nesta cotação.</p>
   </div>
   {% endfor %}
 

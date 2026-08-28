@@ -89,15 +89,23 @@ def responder_por_token(request, cotacao_id, token_hash):
         messages.info(request, "Nenhum item desta cotação pertence às suas categorias.")
         return render(request, "cotacoes/fornecedor/sem_itens.html")
 
+    itens_list = list(itens)
+
     if request.method == "POST":
         formset = get_resposta_formset(itens, data=request.POST, fornecedor=token.fornecedor)
         if formset.is_valid():
-            for form in formset:
-                if form.has_changed():
-                    resp = form.save(commit=False)
-                    resp.item = itens[form.cleaned_data.get("index", 0)]  # proxy
-                    resp.fornecedor = token.fornecedor
-                    resp.save()
+            for i, form in enumerate(formset):
+                if form.has_changed() and i < len(itens_list):
+                    resp, _created = RespostaFornecedor.objects.update_or_create(
+                        item=itens_list[i],
+                        fornecedor=token.fornecedor,
+                        defaults={
+                            "preco_unitario": form.cleaned_data["preco_unitario"],
+                            "prazo_entrega_dias": form.cleaned_data.get("prazo_entrega_dias", 0),
+                            "marca": form.cleaned_data.get("marca", ""),
+                            "observacoes": form.cleaned_data.get("observacoes", ""),
+                        },
+                    )
             # Marca token como usado
             token.usado_em = timezone.now()
             token.save(update_fields=["usado_em"])
@@ -110,17 +118,17 @@ def responder_por_token(request, cotacao_id, token_hash):
             messages.success(request, "Resposta enviada com sucesso!")
             return render(request, "cotacoes/fornecedor/resposta_sucesso.html", {"cotacao": cotacao})
     else:
-        formset = get_resposta_formset(itens, fornecedor=token.fornecedor)
+        formset = get_resposta_formset(itens_list, fornecedor=token.fornecedor)
 
-    # Adiciona índice para mapear form -> item no template
+    # Adiciona referência ao item para exibição no template
     for i, form in enumerate(formset.forms):
-        form.item = itens[i]
+        form.item = itens_list[i]
 
     return render(request, "cotacoes/fornecedor/responder.html", {
         "cotacao": cotacao,
         "token": token,
         "formset": formset,
-        "itens": itens,
+        "itens": itens_list,
     })
 
 

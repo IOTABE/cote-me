@@ -65,8 +65,28 @@
           </div>
         </div>
         {% else %}
-          <a class="btn btn-ghost" href="{% url 'accounts:cliente_login' %}">Entrar</a>
-          <a class="btn btn-primary" href="{% url 'accounts:cliente_cadastro' %}">Cadastrar</a>
+          <div class="nav-user-menu">
+            <button type="button" class="user-menu-trigger" aria-haspopup="true" aria-expanded="false" data-dropdown-trigger>
+              <span class="user-avatar material-symbols-rounded">login</span>
+              <span class="user-name">Entrar</span>
+              <span class="chevron material-symbols-rounded">expand_more</span>
+            </button>
+            <div class="user-dropdown" data-dropdown-menu hidden>
+              <a class="dropdown-item" href="{% url 'accounts:cliente_login' %}">
+                <span class="material-symbols-rounded">person</span> Entrar como cliente
+              </a>
+              <a class="dropdown-item" href="{% url 'accounts:fornecedor_login' %}">
+                <span class="material-symbols-rounded">local_shipping</span> Entrar como fornecedor
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="{% url 'accounts:cliente_cadastro' %}">
+                <span class="material-symbols-rounded">person_add</span> Cadastrar como cliente
+              </a>
+              <a class="dropdown-item" href="{% url 'accounts:fornecedor_cadastro' %}">
+                <span class="material-symbols-rounded">storefront</span> Cadastrar como fornecedor
+              </a>
+            </div>
+          </div>
         {% endif %}
       </nav>
     </div>
