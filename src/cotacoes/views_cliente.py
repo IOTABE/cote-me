@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
-from django.db.models import Count
 
 from .models import Cotacao, ItemCotacao, RespostaFornecedor, Pedido
 from .forms import CotacaoForm, ItemCotacaoFormSet, EscolhaVencedorForm, PedidoForm
@@ -16,9 +15,7 @@ from .utils import distribuir_cotacao, gerar_pedidos_automaticos
 @require_http_methods(["GET"])
 def dashboard(request):
     """Lista de cotações do cliente com filtros."""
-    qs = Cotacao.objects.filter(cliente=request.user).annotate(
-        total_itens=Count("itens"),
-    ).select_related("cliente").order_by("-criada_em")
+    qs = Cotacao.objects.filter(cliente=request.user).select_related("cliente").order_by("-criada_em")
 
     status_filtro = request.GET.get("status")
     if status_filtro:

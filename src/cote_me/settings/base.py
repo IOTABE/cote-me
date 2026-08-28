@@ -86,7 +86,11 @@ PASSWORD_HASHERS = [
 ]
 
 # Auth - login próprio
+AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "/conta/login/"
+
+# URL base usada em links de e-mail (confirmação, cotações, pedidos)
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 

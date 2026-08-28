@@ -53,7 +53,7 @@ class Cotacao(models.Model):
 
     @property
     def itens_respondidos(self) -> int:
-        return self.itens.filter(respostas__isnull=False).distinct().count()
+        return self.itens.filter(respostas_fornecedor__isnull=False).distinct().count()
 
     @property
     def progresso_percentual(self) -> int:

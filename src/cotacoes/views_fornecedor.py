@@ -29,7 +29,7 @@ def dashboard_fornecedor(request):
     profile = _get_fornecedor_profile(request.user)
     if not profile:
         messages.error(request, "Acesso restrito a fornecedores.")
-        return redirect("fornecedor:login")
+        return redirect("accounts:fornecedor_login")
 
     # Cotações onde este fornecedor tem tokens válidos
     tokens_pendentes = CotacaoTokenFornecedor.objects.filter(
@@ -131,7 +131,7 @@ def responder_dashboard(request, pk):
     profile = _get_fornecedor_profile(request.user)
     if not profile:
         messages.error(request, "Acesso restrito a fornecedores.")
-        return redirect("fornecedor:login")
+        return redirect("accounts:fornecedor_login")
 
     cotacao = get_object_or_404(Cotacao, pk=pk)
     # Verifica se fornecedor tem token válido para esta cotação
@@ -156,7 +156,7 @@ def detalhe_pedido(request, pk):
     profile = _get_fornecedor_profile(request.user)
     if not profile:
         messages.error(request, "Acesso restrito a fornecedores.")
-        return redirect("fornecedor:login")
+        return redirect("accounts:fornecedor_login")
 
     pedido = get_object_or_404(
         Pedido.objects.select_related("cotacao", "fornecedor__fornecedor_profile")

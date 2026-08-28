@@ -4,6 +4,7 @@ Formulários de autenticação e cadastro.
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from .models import User, Cliente, Fornecedor
 

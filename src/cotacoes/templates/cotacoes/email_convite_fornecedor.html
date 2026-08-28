@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head><meta charset="utf-8"><title>Nova cotação</title></head>
+<body style="font-family:Arial,Helvetica,sans-serif;color:#1f2933;">
+  <h2 style="color:#0b7285;">cote-me — Nova solicitação de cotação</h2>
+  <p>Olá, {{ fornecedor.get_display_name }},</p>
+  <p>Você foi convidado(a) a responder a uma nova cotação de materiais.</p>
+  <ul>
+    <li><strong>Cotação:</strong> #{{ cotacao.id }}</li>
+    <li><strong>Prazo de resposta:</strong> {{ prazo_limite|date:"d/m/Y H:i" }}</li>
+  </ul>
+  <p>Para visualizar os itens e enviar seus preços, acesse o link abaixo (válido para esta cotação):</p>
+  <p><a href="{{ url }}" style="background:#0b7285;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block;">Responder cotação</a></p>
+  <p style="font-size:12px;color:#52606d;">Se você não reconhece esta solicitação, pode ignorar este e-mail.</p>
+</body>
+</html>
