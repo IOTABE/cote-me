@@ -126,7 +126,7 @@ def get_resposta_formset(item_queryset, data=None, fornecedor=None):
     RespostaFormSet = forms.modelformset_factory(
         RespostaFornecedor,
         form=RespostaFornecedorForm,
-        extra=0,
+        extra=len(initial),
         can_delete=False,
     )
     return RespostaFormSet(queryset=RespostaFornecedor.objects.none(), initial=initial, data=data)

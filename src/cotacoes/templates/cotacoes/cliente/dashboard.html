@@ -46,10 +46,16 @@
                 </div>
                 <div class="progress-label"><span>{{ c.itens_respondidos }}/{{ c.total_itens }} itens</span><span class="num">{{ c.progresso_percentual }}%</span></div>
               </td>
-              <td class="num">
+              <td class="num actions-cell">
                 <a href="{% url 'cliente:detalhe' c.id %}" class="action-link">
                   <span class="material-symbols-rounded">visibility</span> Ver
                 </a>
+                <form method="post" action="{% url 'cliente:reenviar' c.id %}" class="action-form">
+                  {% csrf_token %}
+                  <button type="submit" class="action-link" title="Reenviar para fornecedores pendentes">
+                    <span class="material-symbols-rounded">send</span> Reenviar
+                  </button>
+                </form>
               </td>
             </tr>
           {% endfor %}

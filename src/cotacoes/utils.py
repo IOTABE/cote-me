@@ -11,15 +11,18 @@ from core.tokens import montar_token_assinado
 from .models import Cotacao, CotacaoTokenFornecedor, RespostaFornecedor, Pedido, ItemPedido
 
 
-def distribuir_cotacao(cotacao: Cotacao) -> int:
+def distribuir_cotacao(cotacao: Cotacao, apenas_pendentes: bool = False) -> int:
     """
     Para cada item da cotação, encontra fornecedores da categoria
     e cria tokens de acesso único (magic-link) para eles.
-    Retorna o número de tokens criados.
+
+    apenas_pendentes=True -> envia somente aos fornecedores que ainda
+    não enviaram resposta (preco_unitario > 0) para esta cotação.
+    Retorna o número de e-mails de convite enviados.
     """
     from accounts.models import Fornecedor
 
-    tokens_criados = 0
+    enviados = 0
     for item in cotacao.itens.select_related("categoria").all():
         fornecedores = Fornecedor.objects.filter(
             ativo=True,
@@ -28,6 +31,12 @@ def distribuir_cotacao(cotacao: Cotacao) -> int:
         ).select_related("user")
 
         for forn in fornecedores:
+            if apenas_pendentes and RespostaFornecedor.objects.filter(
+                item__cotacao=cotacao,
+                fornecedor=forn.user,
+                preco_unitario__gt=0,
+            ).exists():
+                continue
             # Cria resposta vazia (placeholder) para este fornecedor+item
             RespostaFornecedor.objects.get_or_create(
                 item=item,
@@ -35,17 +44,16 @@ def distribuir_cotacao(cotacao: Cotacao) -> int:
                 defaults={"preco_unitario": 0, "prazo_entrega_dias": 0},
             )
             # Cria token de acesso (um por fornecedor por cotação)
-            token_obj, created = CotacaoTokenFornecedor.objects.get_or_create(
+            token_obj, _created = CotacaoTokenFornecedor.objects.get_or_create(
                 cotacao=cotacao,
                 fornecedor=forn.user,
                 defaults={"token_hash": montar_token_assinado()},
             )
-            if created:
-                tokens_criados += 1
             # Envia e-mail de convite
             _enviar_convite_fornecedor(token_obj)
+            enviados += 1
 
-    return tokens_criados
+    return enviados
 
 
 def _enviar_convite_fornecedor(token: CotacaoTokenFornecedor) -> None:

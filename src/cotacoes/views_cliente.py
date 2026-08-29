@@ -14,6 +14,25 @@ from .utils import distribuir_cotacao, gerar_pedidos_automaticos
 
 
 @login_required
+@require_http_methods(["POST"])
+def reenviar_cotacao(request, pk):
+    """Reenvia o convite aos fornecedores pendentes (categoria compatível, sem resposta)."""
+    cotacao = get_object_or_404(Cotacao, pk=pk, cliente=request.user)
+    enviados = distribuir_cotacao(cotacao, apenas_pendentes=True)
+    if enviados:
+        messages.success(
+            request,
+            f"Cotação #{cotacao.id}: {enviados} fornecedor(es) pendente(s) notificado(s) novamente.",
+        )
+    else:
+        messages.info(
+            request,
+            f"Cotação #{cotacao.id}: não há fornecedores pendentes para notificar.",
+        )
+    return redirect("cliente:detalhe", pk=pk)
+
+
+@login_required
 @require_http_methods(["GET"])
 def dashboard(request):
     """Lista de cotações do cliente com filtros."""
@@ -151,6 +170,42 @@ def escolher_vencedores(request, pk):
         "cotacao": cotacao,
         "forms_por_item": forms_por_item,
     })
+
+
+@login_required
+@require_http_methods(["POST"])
+def encerrar_e_gerar_pedido(request, pk):
+    """Encerra a cotação e gera os pedidos agrupados por fornecedor (melhor preço por item)."""
+    cotacao = get_object_or_404(Cotacao, pk=pk, cliente=request.user)
+
+    if cotacao.status in (
+        Cotacao.Status.FECHADA,
+        Cotacao.Status.PEDIDO_DISPARADO,
+        Cotacao.Status.CANCELADA,
+    ):
+        messages.warning(request, "Esta cotação já foi encerrada ou cancelada.")
+        return redirect("cliente:detalhe", pk=pk)
+
+    # Auto-escolhe a melhor resposta (menor preço) por item
+    escolhas = {}
+    for item in cotacao.itens.all():
+        melhor = item.respostas_fornecedor.filter(preco_unitario__gt=0).order_by("preco_unitario").first()
+        if melhor:
+            escolhas[item.id] = melhor.id
+
+    if not escolhas:
+        messages.error(
+            request,
+            "Não há respostas com preço informado para gerar os pedidos.",
+        )
+        return redirect("cliente:detalhe", pk=pk)
+
+    pedidos = gerar_pedidos_automaticos(cotacao, escolhas)
+    messages.success(
+        request,
+        f"Cotação #{cotacao.id} encerrada! {len(pedidos)} pedido(s) gerado(s) e enviado(s) (um por fornecedor).",
+    )
+    return redirect("cliente:detalhe", pk=pk)
 
 
 @login_required

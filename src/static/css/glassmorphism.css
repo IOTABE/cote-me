@@ -334,6 +334,10 @@ textarea.form-control { min-height: 96px; resize: vertical; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .action-link { color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
 .action-link:hover { text-decoration: underline; }
+
+.actions-cell { display: inline-flex; align-items: center; gap: 14px; justify-content: flex-end; }
+.action-form { display: inline; margin: 0; padding: 0; }
+.action-form .action-link { background: none; border: none; cursor: pointer; font: inherit; color: var(--accent); }
 .muted { color: var(--text-dim); }
 .row { display: flex; flex-wrap: wrap; gap: 16px; }
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }

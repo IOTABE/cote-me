@@ -65,7 +65,20 @@
       {{ cotacao.itens_respondidos }} de {{ cotacao.total_itens }} itens com resposta
     </div>
 
-    {% if cotacao.status == "fechada" %}
+    {% if cotacao.status == "aberta" or cotacao.status == "parcial" %}
+      {% if cotacao.itens_respondidos > 0 %}
+      <div class="actions mt-16">
+        <form method="post" action="{% url 'cliente:encerrar' cotacao.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">
+            <span class="material-symbols-rounded">check_circle</span> Encerrar e gerar pedido
+          </button>
+        </form>
+      </div>
+      {% else %}
+      <p class="muted mt-16">Aguardando respostas dos fornecedores para gerar os pedidos.</p>
+      {% endif %}
+    {% elif cotacao.status == "fechada" %}
     <div class="actions mt-16">
       <a class="btn btn-primary" href="{% url 'cliente:escolher_vencedores' cotacao.id %}">
         <span class="material-symbols-rounded">emoji_events</span> Escolher vencedores
