@@ -3,6 +3,7 @@ Views do app core: home, about, etc.
 """
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 
 def home(request):
@@ -18,3 +19,11 @@ def dashboard_redirect(request):
     elif hasattr(request.user, "fornecedor_profile"):
         return redirect("fornecedor:dashboard")
     return render(request, "core/dashboard_redirect.html")
+
+
+def manifest_json(request):
+    return render(request, "manifest.json", content_type="application/json")
+
+
+def service_worker(request):
+    return render(request, "sw.js", content_type="application/javascript")

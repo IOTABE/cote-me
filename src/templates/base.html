@@ -5,6 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}cote-me{% endblock %}</title>
+
+  <!-- PWA -->
+  <link rel="icon" type="image/svg+xml" href="{% static 'icons/favicon.svg' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon.svg' %}">
+  <link rel="manifest" href="{% url 'core:manifest' %}">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="cote-me">
+  <meta name="application-name" content="cote-me">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
@@ -121,6 +131,13 @@
   </footer>
 
   <script src="{% static 'js/app.js' %}"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("{% url 'core:service_worker' %}");
+      });
+    }
+  </script>
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>

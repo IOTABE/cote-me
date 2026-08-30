@@ -11,4 +11,6 @@ app_name = "core"
 urlpatterns = [
     path("", views.home, name="home"),
     path("dashboard/", login_required(views.dashboard_redirect), name="dashboard_redirect"),
+    path("manifest.json", views.manifest_json, name="manifest"),
+    path("sw.js", views.service_worker, name="service_worker"),
 ]

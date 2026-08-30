@@ -1,0 +1,32 @@
+{% load static %}{
+  "name": "cote-me — Cotações Online",
+  "short_name": "cote-me",
+  "description": "Plataforma de cotações online conectando clientes e fornecedores.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "{% static 'icons/icon.svg' %}",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "{% static 'icons/icon-maskable.svg' %}",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "maskable"
+    },
+    {
+      "src": "{% static 'icons/favicon.svg' %}",
+      "type": "image/svg+xml",
+      "sizes": "32x32",
+      "purpose": "any"
+    }
+  ]
+}
