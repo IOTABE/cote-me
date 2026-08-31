@@ -13,9 +13,9 @@ Plataforma web que conecta **clientes** (solicitantes de cotação) a **forneced
 | Banco de dados | SQLite (dev) / PostgreSQL 16 (prod) |
 | WSGI | Gunicorn |
 | Reverse proxy | Nginx |
-| Fila async | Celery + Redis |
-| Estática | WhiteNoise |
-| Senhas | Argon2 |
+| Fila assíncrona | Celery + Redis |
+| Arquivos estáticos | WhiteNoise |
+| Hash de senha | Argon2 |
 | Gerenciador de deps | uv |
 | Front-end | Django Templates + CSS glassmorphism (vanilla JS) |
 
@@ -37,6 +37,19 @@ cote-me/
     ├── static/          # CSS (glassmorphism.css), JS (app.js)
     └── templates/       # Templates base e parciais
 ```
+
+### Apps Django
+
+- **accounts** — Usuário customizado (`AbstractUser` com e-mail como login), perfis `Cliente` e `Fornecedor`, cadastro, login, confirmação por e-mail e primeiro acesso. 6 templates.
+- **core** — Modelo `Categoria`, modelo `EmailToken` (confirmação de e-mail e magic-links), sistema de tokens assinados (HMAC-SHA256), tasks Celery (fechamento automático, lembretes) e management commands (`fechar_cotacoes`, `enviar_lembretes`).
+- **cotacoes** — 6 modelos: `Cotacao`, `ItemCotacao`, `RespostaFornecedor`, `CotacaoTokenFornecedor`, `Pedido`, `ItemPedido`. Views separadas para cliente (5 views) e fornecedor (4 views), formsets dinâmicos, 3 templates de e-mail e 12 templates de página.
+
+### Interface
+
+- Tema **glassmorphism dark** com efeitos de vidro (`backdrop-filter: blur()`) e orbs de cor ambientes
+- Google Fonts: **Inter** (texto) + **Material Symbols Rounded** (ícones)
+- Design responsivo com breakpoint em 760px, sem framework JS (vanilla JS)
+- Formsets inline dinâmicos com adicionar/remover linhas via JS
 
 ---
 
@@ -116,11 +129,31 @@ uv run python src/manage.py runserver
 
 O servidor estará disponível em `http://localhost:8000`.
 
+### Variáveis de ambiente (dev)
+
+Crie um arquivo `.env` na raiz do projeto (ao lado de `pyproject.toml`):
+
+```env
+DJANGO_SETTINGS_MODULE=cote_me.settings.dev
+DJANGO_SECRET_KEY=dev-secret-key-not-for-production
+BASE_URL=http://localhost:8000
+```
+
 Em desenvolvimento:
 - Banco: SQLite (`db.sqlite3`)
 - E-mail: console backend (mensagens aparecem no terminal)
 - Celery: modo eager (tarefas executam sincronamente, sem worker)
 - `DEBUG=True`
+
+### Settings
+
+O projeto usa settings divididos:
+
+| Arquivo | Uso |
+|---|---|
+| `cote_me/settings/base.py` | Configurações compartilhadas |
+| `cote_me/settings/dev.py` | Desenvolvimento: SQLite, e-mail no console, Celery eager |
+| `cote_me/settings/prod.py` | Produção: PostgreSQL, SMTP, HTTPS, segurança reforçada |
 
 ### Management commands
 
@@ -205,7 +238,7 @@ Fornecedor vencedor recebe e-mail com o pedido
 
 ---
 
-## Modelos de dados
+## Modelo de dados
 
 ```
 User (custom, email como login) ──┬── Cliente (perfil 1:1)
